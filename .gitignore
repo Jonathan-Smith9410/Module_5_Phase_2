@@ -1,3 +1,4 @@
 **/venv
 **/deploy.sh
 **/*.pem
+**/__pycache__

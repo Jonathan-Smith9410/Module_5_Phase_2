@@ -11,14 +11,19 @@ def get_database_url():
     # Having dev and production modes is quite a common pattern and you will
     # see it in many real-world applications.
     if os.environ.get("APP_ENV") == "PRODUCTION":
+        user = os.environ.get("POSTGRES_USER")
         password = os.environ.get("POSTGRES_PASSWORD")
-        hostname = os.environ.get("POSTGRES_HOSTNAME")
-        # This URL below is constructed out of the password and hostname
-        # We'll use this URL to connect to the database in production
-        return f"postgres://postgres:{password}@{hostname}:5432/postgres"
+        host = os.environ.get("POSTGRES_HOST")
+        db = os.environ.get("POSTGRES_DB", "postgres")
+        return f"postgresql://{user}:{password}@{host}:5432/{db}"
+    elif os.environ.get("APP_ENV") == "DOCKER_DEV":
+        # This URL is for our local database
+        # If you see a connection error, you may need to edit this URL
+        return "postgres://postgres@host.docker.internal:5432/postgres"
     else:
-        # This URL is for our local database. You may need to edit it.
-        return "postgres://localhost:5432/postgres"
+        # This URL is for our local database
+        # If you see a connection error, you may need to edit this URL
+        return "postgres://postgres@localhost:5432/postgres"
 
 # We're going to write a function that sets up the database with the right table
 def setup_database(url):
@@ -55,7 +60,7 @@ def get_messages():
     rows = cursor.fetchall()
 
     # Format the results and add a form too
-    return format_messages(rows) + generate_form()
+    return "<h2>Your Messages</h2>" + format_messages(rows) + generate_form()
 
 # These two methods generate HTML lists and forms
 def format_messages(messages):
@@ -96,6 +101,6 @@ if __name__ == '__main__':
     # In production we don't want the fancy error messages — users won't know
     # what to do with them. So no `debug=True`
     if os.environ.get("APP_ENV") == "PRODUCTION":
-        app.run(port=5000, host='0.0.0.0')
+        app.run(port=5002, host='0.0.0.0')
     else:
-        app.run(debug=True, port=5000, host='0.0.0.0')
+        app.run(debug=True, port=5002, host='0.0.0.0')
